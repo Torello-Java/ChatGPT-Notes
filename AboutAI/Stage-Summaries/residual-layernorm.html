@@ -11,35 +11,35 @@
 <BR /><BR />
 
 <B>RESIDUAL</B><BR />
-Add the sublayer output back to its input to preserve signal and ease optimization.<BR />
-<DIV CLASS="SNIP">{@code
+Add the sublayer output back to its input to preserve signal and help optimization.<BR />
+<DIV CLASS="SNIP">
 Given input X:[L, d_model] and sublayer F(·):
 Y = X + F(X)
-}</DIV>
+</DIV>
 <BR />
 
 <B>LAYERNORM (NOT "SUM TO ONE")</B><BR />
-LayerNorm normalizes per token across features to zero mean and unit variance, then
-applies learned scale/shift (gamma, beta). It does NOT force components to sum to 1.<BR />
+LayerNorm normalizes each token's feature vector to zero mean and unit variance, then applies a
+learned scale (gamma) and shift (beta). It does NOT make components sum to 1.<BR />
 <BR />
-<DIV CLASS="SNIP">{@code
-For a token vector y in R^{d_model}:
-mu = mean(y),  sigma = sqrt(var(y) + eps)
-LN(y) = gamma * ((y - mu) / sigma) + beta
-}</DIV>
+<DIV CLASS="SNIP MATH">
+For a token vector y ∈ ℝ^{d_model}:<BR />
+μ = mean(y),  σ = sqrt( var(y) + ε )<BR />
+LN(y) = γ * ( (y - μ) / σ ) + β
+</DIV>
 <BR />
 
 <B>PRE-LN VS POST-LN</B><BR />
 <UL CLASS="JDUL">
-  <LI>POST-LN (original): Y = LN(X + F(X))</LI>
-  <LI>PRE-LN (modern):    Y = X + F(LN(X))  -> improves stability/depth</LI>
+  <LI>POST-LN (original): Y = LN( X + F(X) )</LI>
+  <LI>PRE-LN (modern):    Y = X + F( LN(X) )   — generally more stable for deep stacks.</LI>
 </UL>
 <BR />
 
 <B>WHY IT HELPS</B><BR />
 <UL CLASS="JDUL">
-  <LI>Residuals keep gradients flowing (identity path).</LI>
-  <LI>LayerNorm stabilizes scale, reduces covariate shift across layers.</LI>
+  <LI>Residuals give an identity path for gradients.</LI>
+  <LI>LayerNorm stabilizes scale and reduces covariate shift layer-to-layer.</LI>
 </UL>
 
 </BODY>

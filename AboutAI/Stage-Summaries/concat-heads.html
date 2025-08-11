@@ -10,34 +10,41 @@
 <H1>CONCAT ALONG HEADS</H1>
 <BR /><BR />
 
-<B>WHAT IT IS</B><BR />
-Each head produces {@code O_head:[L, d_v]}. Join heads along the feature axis to get
-{@code O_cat:[L, h*d_v]}. Then apply an output projection {@code W_O} to return to
-{@code d_model}.<BR />
+<B>WHAT IS A "HEAD"?</B><BR />
+A head is one independent attention channel with its own parameters (its slice of W_Q, W_K, W_V).<BR />
+Each head sees the same tokens but can learn different patterns. If there are h heads, we compute
+Q, K, V for each head and produce an output per head, then merge them.<BR />
+<BR />
+
+<B>TERMS</B><BR />
+<UL CLASS="JDUL">
+  <LI>O<sub>head,k</sub>  /  <CODE>O_head_k</CODE> : Output of head k, shape [L, d_v].</LI>
+  <LI>Concat along feature dim: join the d_v features from all heads into one vector of size h·d_v.</LI>
+  <LI>W<sub>O</sub>: Final output projection to map back to d_model.</LI>
+</UL>
 <BR />
 
 <B>SHAPES</B><BR />
-<DIV CLASS="SNIP">{@code
+<DIV CLASS="SNIP">
 For each head k in [0..h-1]:
   O_head_k : [L, d_v]
 
-Concat along feature dim -> O_cat : [L, h*d_v]
+Concat features across heads -> O_cat : [L, h*d_v]
 
 W_O : [h*d_v, d_model]
 O   = O_cat * W_O  -> [L, d_model]
-}</DIV>
+</DIV>
 <BR />
 
 <B>WHY PROJECT BACK?</B><BR />
 <UL CLASS="JDUL">
-  <LI>Mix information across heads.</LI>
-  <LI>Keep model width at d_model for residual connection.</LI>
+  <LI>Mix information across heads into a common channel width (d_model).</LI>
+  <LI>Keep the width compatible with residual connections.</LI>
 </UL>
 <BR />
 
 <B>ORDERING GOTCHAS</B><BR />
-Ensure the heads are concatenated in the same order they were produced, and that
-{@code W_O} was trained with that exact ordering.<BR />
+Concatenate heads in the trained order and make sure W<sub>O</sub> matches that order.<BR />
 
 </BODY>
 </HTML>

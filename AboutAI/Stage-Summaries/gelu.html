@@ -1,7 +1,7 @@
 <!DOCTYPE HTML>
 <HTML>
 <HEAD>
-<TITLE>GELU — The Transformer's Favorite Nonlinearity</TITLE>
+<TITLE>GELU — Nonlinearity + Gaussian Connection</TITLE>
 <META CHARSET="utf-8" />
 <LINK REL="stylesheet" TYPE="text/css" HREF="styles.css" />
 </HEAD>
@@ -11,29 +11,49 @@
 <BR /><BR />
 
 <B>DEFINITION</B><BR />
-Gaussian Error Linear Unit. Smoothly gates inputs based on their value under a Gaussian
-cumulative distribution.<BR />
+Gaussian Error Linear Unit. Smoothly gates inputs based on the Gaussian CDF.<BR />
 <BR />
-<DIV CLASS="SNIP">{@code
-Exact:      GELU(x) = 0.5 * x * (1 + erf(x / sqrt(2)))
-Tanh approx:GELU(x) ≈ 0.5 * x * (1 + tanh( sqrt(2/pi) * (x + 0.044715*x^3) ))
-}</DIV>
+<DIV CLASS="SNIP MATH">
+Exact:  GELU(x) = 0.5 * x * (1 + erf( x / √2 ))<BR />
+Tanh approx:  GELU(x) ≈ 0.5 * x * (1 + tanh( √(2/π) * ( x + 0.044715 x^3 ) ))
+</DIV>
 <BR />
 
 <B>WHERE IT APPEARS</B><BR />
-Inside the FEED-FORWARD (FFN) block, i.e., after the first linear expansion
-and before projecting back down:<BR />
-<DIV CLASS="SNIP">{@code
-FFN(x) = W2 * GELU(W1 * x + b1) + b2
-}</DIV>
+Inside the FEED-FORWARD (FFN) block, i.e., after the first linear expansion and before projecting
+back down:<BR />
+<DIV CLASS="SNIP">
+FFN(x) = W2 * GELU( W1 * x + b1 ) + b2
+</DIV>
 <BR />
 
-<B>WHY GELU OVER RELU/SIGMOID</B><BR />
-<UL CLASS="JDUL">
-  <LI>Smoother than ReLU, avoids hard zero cutoffs.</LI>
-  <LI>Empirically strong in Transformers.</LI>
-  <LI>Better gradient flow for small positives/negatives than ReLU.</LI>
-</UL>
+<B>GELU VS SOFTMAX (GAUSSIAN TALK)</B><BR />
+GELU uses the Gaussian CDF via erf(·); it behaves like a smooth gate on each feature.<BR />
+SoftMax maps a vector to a probability simplex using exponentials; it is not a Gaussian,
+though certain quadratic logit forms can mimic Gaussian-like kernels. Different roles:
+GELU = per-feature nonlinearity in the FFN, SoftMax = across-positions weighting in attention.<BR />
+<BR />
+
+<B>THE ERROR FUNCTION (ERF) — QUICK RECALL</B><BR />
+<DIV CLASS="SNIP MATH">
+erf(x) = (2/√π) ∫₀ˣ e^{−t²} dt<BR />
+It is related to the Gaussian CDF:  Φ(x) = 0.5 * ( 1 + erf( x / √2 ) ).
+</DIV>
+<BR />
+
+<B>TAYLOR SERIES / EXPANSIONS</B><BR />
+<DIV CLASS="SNIP MATH">
+erf(x) = (2/√π) ( x − x³/3 + x⁵/10 − x⁷/42 + … )<BR />
+tanh(x) = x − x³/3 + (2 x⁵)/15 − (17 x⁷)/315 + …<BR />
+GELU exact has no simple closed-form power series that’s used in practice, but the tanh approximation
+above is a compact surrogate that’s very accurate.
+</DIV>
+<BR />
+
+<B>OTHER TRANSFORMS (JUST A NOTE)</B><BR />
+Fourier/Laplace transforms for erf and tanh exist but are not typically needed when thinking about
+Transformer blocks; what matters operationally is GELU’s smooth gating and good gradients.
+</B>
 
 </BODY>
 </HTML>

@@ -11,37 +11,45 @@
 <BR /><BR />
 
 <B>WHAT IT DOES</B><BR />
-Converts per-token logits into a probability distribution across positions.<BR />
-Each row sums to 1; values are non-negative; largest logits dominate.<BR />
+Turns per-token scores into a probability distribution over positions. Each row sums to 1,
+values are non-negative, and large scores dominate.<BR />
+<BR />
+
+<B>WHAT ARE "LOGITS"?</B><BR />
+"Logits" are raw, unnormalized scores output by a model before any normalization (like SoftMax).<BR />
+They can be positive or negative and are not probabilities until SoftMax is applied.<BR />
 <BR />
 
 <B>DEFINITION (ROW-WISE)</B><BR />
-<DIV CLASS="SNIP">{@code
-Given a row s (length L): softmax(s)_i = exp(s_i - max(s)) / Σ_j exp(s_j - max(s))
-}</DIV>
-Subtracting {@code max(s)} is the standard stability trick.<BR />
+<DIV CLASS="SNIP MATH">
+Given a row s of length L:<BR />
+softmax(s)<SUB>i</SUB> = exp(s<SUB>i</SUB> - max(s)) / Σ<SUB>j</SUB> exp(s<SUB>j</SUB> - max(s))<BR />
+<BR />
+Subtracting max(s) improves numerical stability.
+</DIV>
 <BR />
 
 <B>WHERE IT SITS</B><BR />
-After scoring: {@code S = (Q*K^T) / sqrt(d_k)} and optional mask,<BR />
-apply SoftMax across last dimension (keys/positions) per head.<BR />
+After scoring S = (Q K<SUP>T</SUP>) / √d_k and after adding any masks,
+apply SoftMax across the key/position dimension for each head.<BR />
 <BR />
 
 <B>TEMPERATURE (OPTIONAL)</B><BR />
-<DIV CLASS="SNIP">{@code
-softmax(s / T) with T>1 -> flatter; T<1 -> peakier.
-}</DIV>
+<DIV CLASS="SNIP">
+softmax(s / T) with T&gt;1 flattens; T&lt;1 sharpens.
+</DIV>
 <BR />
 
 <B>MASKING</B><BR />
-Add {@code -INF} to disallowed positions (padding or future tokens) before SoftMax.<BR />
+Add a very negative number (effectively −∞) to disallowed positions (padding or future tokens)
+before SoftMax so they receive probability ~0.<BR />
 <BR />
 
-<B>OUTPUT SHAPES</B><BR />
-<DIV CLASS="SNIP">{@code
-S:[h, L, L] -> softmax_rowwise(S) = A:[h, L, L]
-Attended values: O_head = A * V  where V:[h, L, d_v], O_head:[h, L, d_v]
-}</DIV>
+<B>GAUSSIAN CONNECTION?</B><BR />
+SoftMax is NOT a Gaussian. It uses exponentials and normalization to map logits to a simplex.<BR />
+However, if logits have a quadratic form (e.g., negative squared distance), the resulting
+distribution can resemble a Gaussian kernel over positions. In standard attention,
+the Q·K<SUP>T</SUP> similarity is linear, not quadratic; Gaussian behavior is not guaranteed.<BR />
 
 </BODY>
 </HTML>

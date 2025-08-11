@@ -11,44 +11,45 @@
 <BR /><BR />
 
 <B>ROLE</B><BR />
-Project token embeddings into three views: Queries (Q), Keys (K), Values (V).<BR />
-These enable similarity scoring (Q·K^T) and weighted mixing of information (V).<BR />
+Project token embeddings into three learned views: Queries (Q), Keys (K), Values (V).<BR />
+This enables similarity scoring via dot products (Q K<SUP>T</SUP>) and weighted mixing of
+information (V).<BR />
 <BR />
 
 <B>DEFINITIONS</B><BR />
-<DIV CLASS="SNIP">{@code
+<DIV CLASS="SNIP">
 X          : [L, d_model]
 W_Q        : [d_model, h*d_k]
 W_K        : [d_model, h*d_k]
 W_V        : [d_model, h*d_v]
 
-Q = X * W_Q  -> reshape to [h, L, d_k]
-K = X * W_K  -> reshape to [h, L, d_k]
-V = X * W_V  -> reshape to [h, L, d_v]
-}</DIV>
+Q = X * W_Q  -> reshape/split to [h, L, d_k]
+K = X * W_K  -> reshape/split to [h, L, d_k]
+V = X * W_V  -> reshape/split to [h, L, d_v]
+</DIV>
 <BR />
 
 <B>WHY MULTIPLE HEADS?</B><BR />
 <UL CLASS="JDUL">
-  <LI>Different heads attend to different patterns or positions.</LI>
-  <LI>Smaller per-head dims (d_k, d_v) improve stability and efficiency.</LI>
+  <LI>Different heads can focus on different positions/patterns/relations.</LI>
+  <LI>Smaller per-head dims (d_k, d_v) keep dot-product scales stable and cheaper.</LI>
 </UL>
 <BR />
 
 <B>NUMERICS</B><BR />
-Scale QK^T by {@code 1/sqrt(d_k)} to keep logits in a friendly range.<BR />
-Initialization should keep variance balanced across projections.<BR />
+Scale Q K<SUP>T</SUP> by 1/√d_k to keep logits in a numerically friendly range.<BR />
+Initialize so variances stay balanced across projections.<BR />
 <BR />
 
 <B>COMMON PITFALLS</B><BR />
 <UL CLASS="JDUL">
-  <LI>Mismatched reshape/order when splitting heads.</LI>
-  <LI>For causal decoders, remember the upper-triangular mask before SoftMax.</LI>
+  <LI>Wrong reshape/split order when forming heads (mixing L and h dims).</LI>
+  <LI>For causal decoders, apply the upper-triangular mask before SoftMax.</LI>
 </UL>
 
 <BR /><HR /><BR />
-<DIV CLASS="SNIP">
-{@code Attention logits per head: S = (Q * K^T) / sqrt(d_k)  where S:[L, L]}
+<DIV CLASS="SNIP MATH">
+Attention logits per head:  S = (Q · K<SUP>T</SUP>) / √d_k   where S:[L, L]
 </DIV>
 
 </BODY>
