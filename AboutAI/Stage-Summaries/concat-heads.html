@@ -1,0 +1,43 @@
+<!DOCTYPE HTML>
+<HTML>
+<HEAD>
+<TITLE>Concat Along Heads — Multi-Head Join + WO</TITLE>
+<META CHARSET="utf-8" />
+<LINK REL="stylesheet" TYPE="text/css" HREF="styles.css" />
+</HEAD>
+<BODY>
+
+<H1>CONCAT ALONG HEADS</H1>
+<BR /><BR />
+
+<B>WHAT IT IS</B><BR />
+Each head produces {@code O_head:[L, d_v]}. Join heads along the feature axis to get
+{@code O_cat:[L, h*d_v]}. Then apply an output projection {@code W_O} to return to
+{@code d_model}.<BR />
+<BR />
+
+<B>SHAPES</B><BR />
+<DIV CLASS="SNIP">{@code
+For each head k in [0..h-1]:
+  O_head_k : [L, d_v]
+
+Concat along feature dim -> O_cat : [L, h*d_v]
+
+W_O : [h*d_v, d_model]
+O   = O_cat * W_O  -> [L, d_model]
+}</DIV>
+<BR />
+
+<B>WHY PROJECT BACK?</B><BR />
+<UL CLASS="JDUL">
+  <LI>Mix information across heads.</LI>
+  <LI>Keep model width at d_model for residual connection.</LI>
+</UL>
+<BR />
+
+<B>ORDERING GOTCHAS</B><BR />
+Ensure the heads are concatenated in the same order they were produced, and that
+{@code W_O} was trained with that exact ordering.<BR />
+
+</BODY>
+</HTML>

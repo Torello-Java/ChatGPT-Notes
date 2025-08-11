@@ -1,0 +1,47 @@
+<!DOCTYPE HTML>
+<HTML>
+<HEAD>
+<TITLE>SoftMax — Turning Scores Into Weights</TITLE>
+<META CHARSET="utf-8" />
+<LINK REL="stylesheet" TYPE="text/css" HREF="styles.css" />
+</HEAD>
+<BODY>
+
+<H1>SOFTMAX</H1>
+<BR /><BR />
+
+<B>WHAT IT DOES</B><BR />
+Converts per-token logits into a probability distribution across positions.<BR />
+Each row sums to 1; values are non-negative; largest logits dominate.<BR />
+<BR />
+
+<B>DEFINITION (ROW-WISE)</B><BR />
+<DIV CLASS="SNIP">{@code
+Given a row s (length L): softmax(s)_i = exp(s_i - max(s)) / Σ_j exp(s_j - max(s))
+}</DIV>
+Subtracting {@code max(s)} is the standard stability trick.<BR />
+<BR />
+
+<B>WHERE IT SITS</B><BR />
+After scoring: {@code S = (Q*K^T) / sqrt(d_k)} and optional mask,<BR />
+apply SoftMax across last dimension (keys/positions) per head.<BR />
+<BR />
+
+<B>TEMPERATURE (OPTIONAL)</B><BR />
+<DIV CLASS="SNIP">{@code
+softmax(s / T) with T>1 -> flatter; T<1 -> peakier.
+}</DIV>
+<BR />
+
+<B>MASKING</B><BR />
+Add {@code -INF} to disallowed positions (padding or future tokens) before SoftMax.<BR />
+<BR />
+
+<B>OUTPUT SHAPES</B><BR />
+<DIV CLASS="SNIP">{@code
+S:[h, L, L] -> softmax_rowwise(S) = A:[h, L, L]
+Attended values: O_head = A * V  where V:[h, L, d_v], O_head:[h, L, d_v]
+}</DIV>
+
+</BODY>
+</HTML>

@@ -1,0 +1,39 @@
+<!DOCTYPE HTML>
+<HTML>
+<HEAD>
+<TITLE>GELU — The Transformer's Favorite Nonlinearity</TITLE>
+<META CHARSET="utf-8" />
+<LINK REL="stylesheet" TYPE="text/css" HREF="styles.css" />
+</HEAD>
+<BODY>
+
+<H1>GELU</H1>
+<BR /><BR />
+
+<B>DEFINITION</B><BR />
+Gaussian Error Linear Unit. Smoothly gates inputs based on their value under a Gaussian
+cumulative distribution.<BR />
+<BR />
+<DIV CLASS="SNIP">{@code
+Exact:      GELU(x) = 0.5 * x * (1 + erf(x / sqrt(2)))
+Tanh approx:GELU(x) ≈ 0.5 * x * (1 + tanh( sqrt(2/pi) * (x + 0.044715*x^3) ))
+}</DIV>
+<BR />
+
+<B>WHERE IT APPEARS</B><BR />
+Inside the FEED-FORWARD (FFN) block, i.e., after the first linear expansion
+and before projecting back down:<BR />
+<DIV CLASS="SNIP">{@code
+FFN(x) = W2 * GELU(W1 * x + b1) + b2
+}</DIV>
+<BR />
+
+<B>WHY GELU OVER RELU/SIGMOID</B><BR />
+<UL CLASS="JDUL">
+  <LI>Smoother than ReLU, avoids hard zero cutoffs.</LI>
+  <LI>Empirically strong in Transformers.</LI>
+  <LI>Better gradient flow for small positives/negatives than ReLU.</LI>
+</UL>
+
+</BODY>
+</HTML>

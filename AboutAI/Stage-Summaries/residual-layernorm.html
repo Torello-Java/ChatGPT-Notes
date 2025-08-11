@@ -1,0 +1,46 @@
+<!DOCTYPE HTML>
+<HTML>
+<HEAD>
+<TITLE>Residual + LayerNorm — Add & Normalize</TITLE>
+<META CHARSET="utf-8" />
+<LINK REL="stylesheet" TYPE="text/css" HREF="styles.css" />
+</HEAD>
+<BODY>
+
+<H1>RESIDUAL + LAYERNORM</H1>
+<BR /><BR />
+
+<B>RESIDUAL</B><BR />
+Add the sublayer output back to its input to preserve signal and ease optimization.<BR />
+<DIV CLASS="SNIP">{@code
+Given input X:[L, d_model] and sublayer F(·):
+Y = X + F(X)
+}</DIV>
+<BR />
+
+<B>LAYERNORM (NOT "SUM TO ONE")</B><BR />
+LayerNorm normalizes per token across features to zero mean and unit variance, then
+applies learned scale/shift (gamma, beta). It does NOT force components to sum to 1.<BR />
+<BR />
+<DIV CLASS="SNIP">{@code
+For a token vector y in R^{d_model}:
+mu = mean(y),  sigma = sqrt(var(y) + eps)
+LN(y) = gamma * ((y - mu) / sigma) + beta
+}</DIV>
+<BR />
+
+<B>PRE-LN VS POST-LN</B><BR />
+<UL CLASS="JDUL">
+  <LI>POST-LN (original): Y = LN(X + F(X))</LI>
+  <LI>PRE-LN (modern):    Y = X + F(LN(X))  -> improves stability/depth</LI>
+</UL>
+<BR />
+
+<B>WHY IT HELPS</B><BR />
+<UL CLASS="JDUL">
+  <LI>Residuals keep gradients flowing (identity path).</LI>
+  <LI>LayerNorm stabilizes scale, reduces covariate shift across layers.</LI>
+</UL>
+
+</BODY>
+</HTML>
